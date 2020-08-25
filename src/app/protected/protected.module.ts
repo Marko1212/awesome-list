@@ -10,6 +10,14 @@ import { WorkdayModule } from './workday/workday.module';
 
 @NgModule({
   declarations: [],
-  imports: [SharedModule, ProtectedRoutingModule, DashboardModule, ParametersModule, PlanningModule, ProfilModule, WorkdayModule],
+  imports: [
+    SharedModule,
+    ProtectedRoutingModule,
+    DashboardModule,
+    ParametersModule,
+    PlanningModule,
+    ProfilModule,
+    WorkdayModule,
+  ],
 })
 export class ProtectedModule {}
