@@ -8,6 +8,12 @@ import { LoginModule } from './login/login.module';
 
 @NgModule({
   declarations: [],
-  imports: [SharedModule, PublicRoutingModule, HomeModule, RegisterModule, LoginModule],
+  imports: [
+    SharedModule,
+    PublicRoutingModule,
+    HomeModule,
+    RegisterModule,
+    LoginModule,
+  ],
 })
 export class PublicModule {}
