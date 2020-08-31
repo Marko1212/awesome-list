@@ -12,9 +12,10 @@ export class PlanningWorkdayListComponent implements OnInit {
   public workdays$;
   constructor() {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.workdays$ = of([
-      { dueDate: 'Lundi', doneTasks: 1, remainingTasks: 3 },
+      // Je passe remainingTasks à 0 pour tester mon composant fils :
+      { dueDate: 'Lundi', doneTasks: 1, remainingTasks: 0 },
       { dueDate: 'Mardi', doneTasks: 0, remainingTasks: 2 },
       { dueDate: 'Mercredi', doneTasks: 0, remainingTasks: 1 },
     ]).pipe(delay(1000));
