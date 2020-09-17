@@ -1,1 +1,19 @@
-<p>workday-form-tasks works!</p>
+<div [formGroup]="workdayForm">
+ <div formArrayName="tasks">
+  <al-workday-form-tasks-item
+   *ngFor="let task of tasks.controls 
+   index as i;
+   first as isFirst;
+   last as isLast;"
+   [index]="i"
+   [isFirst]="isFirst"
+   [isLast]="isLast"
+   [task]="task" 
+   (removedTask)="onRemovedTask($event)">
+  </al-workday-form-tasks-item>
+ </div>
+ <div class="text-center">
+    <al-workday-form-tasks-add (addedTask)="onAddedTask()">
+    </al-workday-form-tasks-add>
+   </div>
+</div>
