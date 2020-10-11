@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand navbar-light bg-light">
    <!-- Code du menu “hamburger” à ajouter : -->
- <a (click)="toggleSidenav()" class="nav-link text-left">
+ <a *ngIf="user" (click)="toggleSidenav()" class="nav-link text-left">
   <i class="material-icons align-middle">menu</i>
  </a>
   <div class="container">

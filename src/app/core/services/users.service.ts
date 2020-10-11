@@ -54,5 +54,27 @@ export class UsersService {
    }
   };
  }
+
+ get(userId: string, jwt: string): Observable<User|null> {
+  const url =
+   `${environment.firebase.firestore.baseURL}:runQuery?key=
+    ${environment.firebase.apiKey}`;
+  const data = this.getSructuredQuery(userId);
+  const httpOptions = {
+   headers: new HttpHeaders({
+    'Content-Type':  'application/json',
+    'Authorization': `Bearer ${jwt}`
+   })
+  };
+  
+  return this.http.post(url, data, httpOptions).pipe(
+   switchMap((data: any) => {
+    return of(this.getUserFromFirestore(data[0].document.fields));
+   })
+  );
+ }
+  getSructuredQuery(userId: string) {
+    throw new Error('Method not implemented.');
+  }
  
 }
