@@ -9,7 +9,8 @@ import { environment } from '../../../environments/environment';
 import { UsersService } from 'src/app/core/services/users.service';
 import { ErrorService } from 'src/app/core/services/error.service';
 import { LoaderService } from './loader.service';
-import { switchMap, tap, catchError, finalize } from 'rxjs/operators';
+import { switchMap, tap, catchError, finalize, delay } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +23,8 @@ export class AuthService {
     private http: HttpClient,
     private usersService: UsersService,
     private errorService: ErrorService,
-    private loaderService: LoaderService
+    private loaderService: LoaderService,
+    private router: Router
   ) {}
 
   public login(email: string, password: string): Observable<User | null> {
@@ -43,16 +45,15 @@ export class AuthService {
       switchMap((data: any) => {
         const userId: string = data.localId;
         const jwt: string = data.idToken;
+        // On sauvegarde les informations de connexion de l’utilisateur.
+        this.saveAuthData(userId, jwt);
         return this.usersService.get(userId, jwt);
       }),
       tap((user) => this.user.next(user)),
+      tap((_) => this.logoutTimer(3600)), // On déclenche la minuterie !
       catchError((error) => this.errorService.handleError(error)),
       finalize(() => this.loaderService.setLoading(false))
     );
-  }
-
-  public logout(): Observable<null> {
-    return of(null);
   }
 
   public register(
@@ -82,12 +83,42 @@ export class AuthService {
           id: data.localId,
           name: name,
         });
-
+        // On sauvegarde les informations de connexion de l’utilisateur.
+        this.saveAuthData(user.id, jwt);
         return this.usersService.save(user, jwt);
       }),
       tap((user) => this.user.next(user)),
+      tap((_) => this.logoutTimer(3600)), // On déclenche la minuterie aussi ici !
       catchError((error) => this.errorService.handleError(error)),
       finalize(() => this.loaderService.setLoading(false))
     );
   }
+
+  public autoLogin(user: User) {
+    this.user.next(user);
+    this.router.navigate(['app/dashboard']);
+   }
+
+  // Et on ajoute la méthode qui déclenche cette fameuse minuterie :
+  private logoutTimer(expirationTime: number): void {
+    of(true)
+      .pipe(delay(expirationTime * 1000))
+      .subscribe((_) => this.logout());
+  }
+
+  private saveAuthData(userId: string, token: string) {
+    const now = new Date();
+    const expirationDate = (now.getTime() + 3600 * 1000).toString();
+    localStorage.setItem('expirationDate', expirationDate);
+    localStorage.setItem('token', token);
+    localStorage.setItem('userId', userId);
+  }
+
+  public logout(): void {
+    localStorage.removeItem('expirationDate'); // Ajoutez cette ligne, 
+    localStorage.removeItem('token'); // Et celle-ci aussi,
+    localStorage.removeItem('userId'); // Et enfin celle-là !
+    this.user.next(null);
+    this.router.navigate(['/login']);
+   }
 }
