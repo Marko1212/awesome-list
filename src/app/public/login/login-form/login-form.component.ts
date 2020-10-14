@@ -11,7 +11,11 @@ import { AuthService } from 'src/app/core/services/auth.service';
 export class LoginFormComponent implements OnInit {
   loginForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.loginForm = this.fb.group({
@@ -35,11 +39,9 @@ export class LoginFormComponent implements OnInit {
   }
 
   submit() {
-    this.authService
-    .login(this.email.value, this.password.value)
-    .subscribe(
-     _ => this.router.navigate(['/app/dashboard']),
-     _ => this.loginForm.reset()
+    this.authService.login(this.email.value, this.password.value).subscribe(
+      _ => this.router.navigate(['/app/dashboard']),
+      _ => this.loginForm.reset()
     );
   }
 }

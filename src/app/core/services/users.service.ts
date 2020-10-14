@@ -59,7 +59,7 @@ export class UsersService {
   const url =
    `${environment.firebase.firestore.baseURL}:runQuery?key=
     ${environment.firebase.apiKey}`;
-  const data = this.getSructuredQuery(userId);
+  const data = this.getStructuredQuery(userId);
   const httpOptions = {
    headers: new HttpHeaders({
     'Content-Type':  'application/json',
@@ -73,8 +73,23 @@ export class UsersService {
    })
   );
  }
-  getSructuredQuery(userId: string) {
-    throw new Error('Method not implemented.');
-  }
+
+ private getStructuredQuery(userId: string): Object {
+  return {
+   'structuredQuery': {
+    'from': [{
+     'collectionId': 'users'
+    }],
+    'where': {
+     'fieldFilter': {
+      'field': { 'fieldPath': 'id' },
+      'op': 'EQUAL',
+      'value': { 'stringValue': userId }
+     }
+    },
+    'limit': 1
+   }
+  };
+ }
  
 }
