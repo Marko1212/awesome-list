@@ -1,12 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+
+// Ajouter les importations suivantes :
+import { User } from '../../models/user';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'al-sidenav',
   templateUrl: './sidenav.component.html',
   styleUrls: ['./sidenav.component.scss'],
 })
-export class SidenavComponent implements OnInit {
+export class SidenavComponent implements OnInit, OnDestroy {
   public prefix = 'app';
   public dashboardPath = `${this.prefix}/dashboard`;
   public planningPath = `${this.prefix}/planning`;
@@ -14,9 +19,20 @@ export class SidenavComponent implements OnInit {
   public profilPath = `${this.prefix}/profil`;
   public parametersPath = `${this.prefix}/parameters`;
 
-  constructor(private router: Router) {}
+  public subscription: Subscription;
+  public user: User;
 
-  ngOnInit() {}
+  constructor(private router: Router, private authService: AuthService) {}
+
+  ngOnInit() {
+    this.subscription = this.authService.user$.subscribe(
+      (user) => (this.user = user)
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
 
   public navigate(page: string): void {
     this.router.navigate([page]);

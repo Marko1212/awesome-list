@@ -4,7 +4,10 @@ import { Routes, RouterModule } from '@angular/router';
 import { ProtectedComponent } from './protected.component';
 
 // Les autres importations.
-import { AuthGuard } from 'src/app/core/guards/auth.guard';
+import { AuthGuard } from '../core/guards/auth.guard';
+
+// Ajouter cette importation :
+import { RoleGuard } from '../core/guards/role.guard';
 
 const routes: Routes = [
   {
@@ -24,6 +27,7 @@ const routes: Routes = [
           import('./parameters/parameters.module').then(
             (m) => m.ParametersModule
           ),
+        canActivate: [RoleGuard],
       },
       {
         path: 'planning',
