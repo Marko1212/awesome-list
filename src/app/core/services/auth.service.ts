@@ -11,6 +11,7 @@ import { ErrorService } from 'src/app/core/services/error.service';
 import { LoaderService } from './loader.service';
 import { switchMap, tap, catchError, finalize, delay } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { ToastrService } from './toastr.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,8 @@ export class AuthService {
     private usersService: UsersService,
     private errorService: ErrorService,
     private loaderService: LoaderService,
-    private router: Router
+    private router: Router,
+    private toastrService: ToastrService
   ) {}
 
   public login(email: string, password: string): Observable<User | null> {
@@ -121,4 +123,20 @@ export class AuthService {
     this.user.next(null);
     this.router.navigate(['/login']);
    }
+
+   public updateUserState(user: User): Observable<User|null> {
+    this.loaderService.setLoading(true);
+    return this.usersService.update(user).pipe(
+      tap((user) => this.user.next(user)),
+      tap((_) => this.toastrService.showToastr({category: 'success', message: 'Vos informations ont été mises à jour !'})),
+      catchError((error) => this.errorService.handleError(error)),
+      finalize(() => this.loaderService.setLoading(false))
+    );
+   }
+   
+   get currentUser(): User {
+    return this.user.getValue();
+   }  
+
+
 }
