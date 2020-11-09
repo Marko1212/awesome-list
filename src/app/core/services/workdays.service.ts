@@ -7,7 +7,10 @@ import { Task } from '../../shared/models/task';
 import { ToastrService } from './toastr.service';
 import { ErrorService } from './error.service';
 import { LoaderService } from './loader.service';
-import { tap, catchError, finalize } from 'rxjs/operators';
+import { tap, catchError, finalize, switchMap } from 'rxjs/operators'; // ajouter switchMap
+
+import { of, Observable } from 'rxjs';
+import { DateService } from './date.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +18,7 @@ import { tap, catchError, finalize } from 'rxjs/operators';
 export class WorkdaysService {
   constructor(
     private http: HttpClient,
+    private dateService: DateService, // On injecte DateService
     private toastrService: ToastrService,
     private errorService: ErrorService,
     private loaderService: LoaderService
@@ -47,22 +51,105 @@ export class WorkdaysService {
     );
   }
 
+  getWorkdayByDate(date: string, userId: string): Observable<Workday|null> {
+    const url = `${environment.firebase.firestore.baseURL}:runQuery?key=${environment.firebase.apiKey}`;
+    const data = this.getStructuredQuery(date, userId);
+    const jwt: string = localStorage.getItem('token');
+ 
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${jwt}`
+      })
+    };
+ 
+    return this.http.post(url, data, httpOptions).pipe(
+      switchMap((data: any) => {
+        const document = data[0].document;
+        if(!document) { 
+          return of(null);
+        }
+        return of(this.getWorkdayFromFirestore(document.name, document.fields));
+      })
+    );
+  }
+
+  private getStructuredQuery(date: string, userId: string): any {
+    return {
+      'structuredQuery': {
+        'from': [{
+          'collectionId': 'workdays'
+        }],
+        'where': {
+          'compositeFilter': {
+            'op': 'AND',
+            'filters': [
+              {
+                'fieldFilter': {
+                  'field': { 'fieldPath': 'displayDate' },
+                  'op': 'EQUAL',
+                  'value': { 'stringValue': date }
+                }
+              },
+              {
+                'fieldFilter': {
+                  'field': { 'fieldPath': 'userId' },
+                  'op': 'EQUAL',
+                  'value': { 'stringValue': userId }
+                }
+              }
+            ]
+          }
+        },
+        'limit': 1
+      }
+    };
+  }
+
   // Pousser le modèle métier d'une journée de travail au Firestore.
-  private getWorkdayForFirestore(workday: Workday): any {
+  private getWorkdayForFirestore(workday: Workday): Object {
     if (typeof workday.dueDate === 'string') {
       workday.dueDate = +workday.dueDate;
     }
-    const date: number = new Date(workday.dueDate).getTime();
+
+    const dueDate: number = new Date(workday.dueDate).getTime(); // date => dueDate
+    const displayDate: string = this.dateService.getDisplayDate(new Date(workday.dueDate)); // La nouvelle propriété displayDate est prise en compte.
+    
     const tasks: Object = this.getTaskListForFirestore(workday.tasks);
 
     return {
       fields: {
-        dueDate: { integerValue: date },
+        dueDate: { integerValue: dueDate },
+        displayDate: { stringValue: displayDate },
         tasks: tasks,
         notes: { stringValue: workday.notes },
         userId: { stringValue: workday.userId },
       },
     };
+  }
+
+  private getWorkdayFromFirestore(name, fields): Workday {
+    const tasks: Task[] = [];
+    const workdayId: string = name.split('/')[6];
+     
+    fields.tasks.arrayValue.values.forEach(data => {
+      const task: Task = new Task({
+        completed: data.mapValue.fields.completed.booleanValue,
+        done: data.mapValue.fields.done.integerValue,
+        title: data.mapValue.fields.title.stringValue,
+        todo: data.mapValue.fields.todo.integerValue
+      });
+      tasks.push(task);
+    });
+   
+    return new Workday({
+      id: workdayId,
+      userId: fields.userId.stringValue,
+      notes: fields.notes.stringValue,
+      displayDate: fields.displayDate.stringValue,
+      dueDate: fields.dueDate.integerValue,
+      tasks: tasks
+    });
   }
 
   // Mise en place de la liste des tâches d'une journée de travail, pour le Firestore.
