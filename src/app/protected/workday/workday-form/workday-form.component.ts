@@ -11,6 +11,7 @@ import { Workday } from 'src/app/shared/models/workday';
   styles: [],
 })
 export class WorkdayFormComponent implements OnInit {
+  workdayId: string;
   workdayForm: FormGroup;
 
   constructor(private fb: FormBuilder, private router: Router,
@@ -18,6 +19,7 @@ export class WorkdayFormComponent implements OnInit {
     private authService: AuthService) {}
 
   ngOnInit() {
+    this.workdayId = '';
     this.workdayForm = this.createWorkdayForm();
   }
 
@@ -46,7 +48,20 @@ export class WorkdayFormComponent implements OnInit {
 
   submit(): void {
     const userId: string = this.authService.currentUser.id;
-    const workday: Workday = new Workday({...{ userId: userId }, ...this.workdayForm.value});
+
+    if(this.workdayId) {
+      let workday: Workday = new Workday({...{id: this.workdayId }, ...this.workdayForm.value});
+      workday.userId = userId;
+    
+      this.workdaysService.update(workday).subscribe(
+       _ => this.router.navigate(['/app/planning']),
+       _ => this.workdayForm.reset()
+      );
+      return;
+     }
+    
+     let workday: Workday = new Workday({...this.workdayForm.value});
+     workday.userId = userId;
    
     this.workdaysService.save(workday).subscribe(
      _ => this.router.navigate(['/app/planning']),
@@ -67,6 +82,7 @@ export class WorkdayFormComponent implements OnInit {
      this.resetWorkdayForm(); // On réinitialise le formulaire d'une journée de travail.   
      if(!workday) return; // Si cette journée de travail n'existe pas sur le Firestore, alors on s'arrête là.
     
+     this.workdayId = workday.id;
      this.notes.setValue(workday.notes);
      workday.tasks.forEach(task => {
       const taskField: FormGroup = this.fb.group({
