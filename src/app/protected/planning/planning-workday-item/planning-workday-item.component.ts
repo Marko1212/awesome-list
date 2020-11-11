@@ -1,57 +1,24 @@
 import {
   Component,
   Input,
-  OnChanges,
+  OnInit,
   EventEmitter,
-  Output,
-  SimpleChange,
+  Output
 } from '@angular/core';
+import { Workday } from 'src/app/shared/models/workday';
 
 @Component({
   selector: 'al-planning-workday-item',
   templateUrl: './planning-workday-item.component.html',
   styles: [],
 })
-export class PlanningWorkdayItemComponent implements OnChanges {
-  @Input() dueDate: string;
-  @Input() doneTasks: number | string;
-  @Input() remainingTasks: number | string;
-
+export class PlanningWorkdayItemComponent implements OnInit {
+  @Input() workday: Workday;
   @Output() workdayRemoved = new EventEmitter<string>();
+ 
+  ngOnInit() {}
 
-  ngOnChanges(changes: { [propKey: string]: SimpleChange }) {
-    for (const propName in changes) {
-      this.update(propName, changes[propName].currentValue);
-    }
-  }
-
-  update(propName, propValue) {
-    switch (propName) {
-      case 'dueDate': {
-        if ('Lundi' === propValue) {
-          this.dueDate += " (Aujourd'hui)";
-        }
-        break;
-      }
-      case 'doneTasks': {
-        if (0 === propValue) {
-          this.doneTasks = 'Aucune tâche terminée.';
-        }
-        break;
-      }
-      case 'remainingTasks': {
-        if (0 === propValue) {
-          this.remainingTasks = 'Journée de travail terminée !';
-        }
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  removeWorkday(dueDate: string) {
-    this.workdayRemoved.emit(dueDate);
+  removeWorkday(displayDate: string) {
+    this.workdayRemoved.emit(displayDate); // dueDate devient displayDate
   }
 }
