@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Output
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Workday } from 'src/app/shared/models/workday';
 
 @Component({
@@ -14,11 +15,25 @@ import { Workday } from 'src/app/shared/models/workday';
 })
 export class PlanningWorkdayItemComponent implements OnInit {
   @Input() workday: Workday;
-  @Output() workdayRemoved = new EventEmitter<string>();
+  @Output() workdayRemoved = new EventEmitter<Workday>(); //  On émet directement une Workday.
+
+  constructor(private router: Router) {}
  
   ngOnInit() {}
 
-  removeWorkday(displayDate: string) {
-    this.workdayRemoved.emit(displayDate); // dueDate devient displayDate
-  }
+  removeWorkday() {
+    this.workdayRemoved.emit(this.workday);
+   }
+
+  goWorkday(workday: Workday) {
+    this.router.navigate(
+     ['app/workday'], 
+     { 
+      queryParams: { 
+       date: workday.dueDate 
+      } 
+     }
+    );
+   }
+ 
 }

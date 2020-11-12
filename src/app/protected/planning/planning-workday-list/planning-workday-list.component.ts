@@ -20,9 +20,12 @@ export class PlanningWorkdayListComponent implements OnInit {
   const id: string = this.authService.currentUser.id;
   this.workdayService.getWorkdayByUser(id).subscribe(workdays => this.workdays = workdays);
  }
- 
+
  onWorkdayRemoved(workday: Workday) {
-  console.info(workday.dueDate);
+  this.workdayService.remove(workday)
+   .subscribe(_ => this.workdays = this.workdays.filter(el => el.id !== workday.id))
  }
+
+
 
 }

@@ -219,13 +219,32 @@ export class WorkdaysService {
       workdaysData.forEach(data => {
        if (data && data.document) {
         const workday: Workday = this.getWorkdayFromFirestore(data.document.name, data.document.fields);
-        console.log(workday);
         workdays.push(workday);
        }
       })
       return of(workdays);
      }),
      catchError(error => this.errorService.handleError(error))
+    );
+   }
+
+   remove(workday: Workday) {
+    const url = `${environment.firebase.firestore.baseURL}/workdays/${workday.id}?key=${environment.firebase.apiKey}`;
+    const jwt: string = localStorage.getItem('token');
+    const httpOptions = {
+     headers: new HttpHeaders({
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${jwt}`
+     })
+    };
+    
+    return this.http.delete(url, httpOptions).pipe(
+     tap(_ => this.toastrService.showToastr({
+      category: 'success',
+      message: 'Votre journée de travail a été supprimée avec succès.'
+     })),
+     catchError(error => this.errorService.handleError(error)),
+     finalize(() => this.loaderService.setLoading(false))
     );
    }
 
