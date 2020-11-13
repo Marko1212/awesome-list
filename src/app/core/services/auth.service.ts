@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { User } from '../../shared/models/user';
 
 // Les autres importations.
-import { HttpHeaders } from '@angular/common/http';
+//import { HttpHeaders, HttpRequest } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { UsersService } from 'src/app/core/services/users.service';
@@ -49,7 +49,7 @@ export class AuthService {
         const jwt: string = data.idToken;
         // On sauvegarde les informations de connexion de l’utilisateur.
         this.saveAuthData(userId, jwt);
-        return this.usersService.get(userId, jwt);
+        return this.usersService.get(userId);
       }),
       tap((user) => this.user.next(user)),
       tap((_) => this.logoutTimer(3600)), // On déclenche la minuterie !
@@ -87,7 +87,7 @@ export class AuthService {
         });
         // On sauvegarde les informations de connexion de l’utilisateur.
         this.saveAuthData(user.id, jwt);
-        return this.usersService.save(user, jwt);
+        return this.usersService.save(user);
       }),
       tap((user) => this.user.next(user)),
       tap((_) => this.logoutTimer(3600)), // On déclenche la minuterie aussi ici !
@@ -136,7 +136,8 @@ export class AuthService {
    
    get currentUser(): User {
     return this.user.getValue();
-   }  
+   }
+
 
 
 }
