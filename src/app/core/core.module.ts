@@ -11,7 +11,8 @@ import { ToastrComponent } from './components/toastr/toastr.component';
 import { AlertModule } from 'ngx-bootstrap/alert';
 
 // Les autres importations
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [NavbarComponent, FooterComponent, PageNotFoundComponent, LoaderComponent, ToastrComponent],
@@ -24,6 +25,13 @@ import { HttpClientModule } from '@angular/common/http';
     AlertModule.forRoot(),
   ],
   exports: [NavbarComponent, FooterComponent, PageNotFoundComponent, LoaderComponent, ToastrComponent],
+  providers: [
+    {
+     provide: HTTP_INTERCEPTORS,
+     useClass: AuthInterceptor,
+     multi: true
+    }
+   ]
 })
 export class CoreModule {
   constructor(@Optional() @SkipSelf() parentModule: CoreModule) {
